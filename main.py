@@ -29,12 +29,15 @@ def parse_note(path):
         elif clazz == 'noteHeading':
             if text.startswith('Highlight'):
                 book_note['notes'].append([TextBlock, text, re.findall(r'[(](.*?)[)]', text)[0]])
+            elif text.startswith('Bookmark'):
+                book_note['notes'].append([CalloutBlock, text, '🏷️'])
+                book_note['notes'].append([DividerBlock, ''])
             else:
                 book_note['notes'].append([TextBlock, text])
                 is_note = True
         elif clazz == 'noteText':
             if is_note:
-                book_note['notes'].append([CalloutBlock, text])
+                book_note['notes'].append([CalloutBlock, text, '💡'])
                 is_note = False
             else:
                 book_note['notes'].append([QuoteBlock, text])
@@ -63,7 +66,7 @@ def write_to_notion(token, database_url, book_note):
         if child[0] is DividerBlock:
             page.children.add_new(DividerBlock)
         elif child[0] is CalloutBlock:
-            page.children.add_new(child[0], title=child[1], icon="💡")
+            page.children.add_new(child[0], title=child[1], icon=child[2])
         else:
             if len(child) > 2:
                 page.children.add_new(child[0], title=child[1], color=child[2])
